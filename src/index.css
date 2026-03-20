@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sathyabama Revenue Monitoring Portal - Design System
+   Academic institutional design with maroon branding
+*/
+
+@layer base {
+  :root {
+    /* Core backgrounds: Soft beige in light mode */
+    --background: 40 30% 96%;
+    --foreground: 340 20% 15%;
+
+    /* Cards & surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 340 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 20% 15%;
+
+    /* Maroon primary - institutional branding */
+    --primary: 340 75% 31%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft pink secondary - role banners */
+    --secondary: 340 50% 95%;
+    --secondary-foreground: 340 75% 31%;
+
+    /* Muted surfaces */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 45%;
+
+    /* Accent - light maroon tint */
+    --accent: 340 40% 92%;
+    --accent-foreground: 340 75% 31%;
+
+    /* Status colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 340 75% 31%;
+
+    --radius: 0.375rem;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 340 20% 25%;
+    --sidebar-primary: 340 75% 31%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 40% 92%;
+    --sidebar-accent-foreground: 340 75% 31%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 340 75% 31%;
+
+    /* Chart colors */
+    --chart-1: 340 75% 31%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 199 89% 48%;
+  }
+
+  .dark {
+    /* Pure black in dark mode */
+    --background: 0 0% 2%;
+    --foreground: 0 0% 95%;
+
+    --card: 340 20% 12%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 340 20% 12%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Maroon remains the same for brand consistency */
+    --primary: 340 75% 31%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 340 30% 20%;
+    --secondary-foreground: 340 65% 85%;
+
+    --muted: 340 20% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 340 30% 22%;
+    --accent-foreground: 340 75% 31%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 340 20% 20%;
+    --input: 340 20% 20%;
+    --ring: 340 75% 31%;
+
+    --sidebar-background: 340 20% 10%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 340 75% 31%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 30% 18%;
+    --sidebar-accent-foreground: 340 75% 31%;
+    --sidebar-border: 340 20% 18%;
+    --sidebar-ring: 340 75% 31%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .status-completed {
+    @apply bg-success/10 text-success border-success/20;
+  }
+  
+  .status-ongoing {
+    @apply bg-success/10 text-success border-success/20;
+  }
+  
+  .status-terminated {
+    @apply bg-destructive/10 text-destructive border-destructive/20;
+  }
+  
+  /* Revenue colors */
+  .revenue-positive {
+    @apply bg-success text-success-foreground;
+  }
+  
+  .revenue-negative {
+    @apply bg-destructive text-destructive-foreground;
+  }
+  
+  /* Project card styling */
+  .project-card-title {
+    @apply bg-primary text-primary-foreground px-4 py-3 rounded-l-md;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
