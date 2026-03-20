@@ -128,3 +128,19 @@ export const useAddTeamMember = () => {
     },
   });
 };
+
+export const useUpdateProjectStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ projectId, status }: { projectId: string; status: string }) => {
+      const response = await api.put(`/projects/${projectId}/status`, { status });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['project', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['activity_logs', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+};
+
