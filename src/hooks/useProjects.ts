@@ -144,3 +144,87 @@ export const useUpdateProjectStatus = () => {
   });
 };
 
+export const useAnnouncements = () => {
+  return useQuery({
+    queryKey: ['announcements'],
+    queryFn: async () => {
+      const response = await api.get('/announcements');
+      return response.data;
+    },
+  });
+};
+
+export const useAddAnnouncement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.post('/announcements', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+    },
+  });
+};
+
+export const useDeleteAnnouncement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/announcements/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+    },
+  });
+};
+
+export const useAddReportRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.post('/report-requests', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['report_requests'] });
+    },
+  });
+};
+
+export const useAddTransaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ projectId, data }: { projectId: string; data: any }) => {
+      const response = await api.post(`/projects/${projectId}/transactions`, data);
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['project', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['activity_logs', variables.projectId] });
+    },
+  });
+};
+
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/projects/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+};
+export const useDepartments = () => {
+  return useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const response = await api.get('/departments');
+      return response.data;
+    },
+  });
+};

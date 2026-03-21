@@ -30,6 +30,19 @@ const FacultyHome: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}-${m}-${y}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -89,7 +102,7 @@ const FacultyHome: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>{project.sanctioned_date || 'N/A'}</span>
+                      <span>Date: {formatDate(project.sanctioned_date)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />

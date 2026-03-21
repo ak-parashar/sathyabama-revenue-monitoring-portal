@@ -23,6 +23,14 @@ const HODDashboard: React.FC = () => {
   const { projects: allProjects, isLoading } = useDashboardStats();
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
 
   if (isLoading || !allProjects) {
     return (
@@ -55,7 +63,7 @@ const HODDashboard: React.FC = () => {
     availableBudget: filteredProjects.reduce((s: number, p: any) => s + Number(p.received_budget) - Number(p.utilized_budget), 0),
   };
 
-  const agencyNames = [...new Set(filteredProjects.map((p: any) => p.funding_agency))];
+  const agencyNames = [...new Set(filteredProjects.map((p: any) => p.funding_agency))].filter(Boolean) as string[];
   const agencyStats = agencyNames.map(agency => {
     const ap = filteredProjects.filter((p: any) => p.funding_agency === agency);
     return {
@@ -107,7 +115,7 @@ const HODDashboard: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Agencies</SelectItem>
-                {agencyNames.map(agency => (
+                {agencyNames.map((agency: string) => (
                   <SelectItem key={agency} value={agency}>{agency}</SelectItem>
                 ))}
               </SelectContent>
@@ -118,7 +126,7 @@ const HODDashboard: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All PIs</SelectItem>
-                {piNames.map(name => (
+                {piNames.map((name: string) => (
                   <SelectItem key={name} value={name}>{name}</SelectItem>
                 ))}
               </SelectContent>
@@ -297,7 +305,7 @@ const HODDashboard: React.FC = () => {
                     <div className="truncate">{project.title}</div>
                     <div>{project.funding_agency}</div>
                     <div>{(project.profiles as any)?.email}</div>
-                    <div>{project.sanctioned_date}</div>
+                    <div>{formatDate(project.sanctioned_date)}</div>
                     <div>{formatCurrency(Number(project.sanctioned_budget))}</div>
                   </div>
                 ))}
@@ -323,6 +331,7 @@ const HODDashboard: React.FC = () => {
                     <th className="text-left p-3 font-medium">Agency</th>
                     <th className="text-left p-3 font-medium">Status</th>
                     <th className="text-left p-3 font-medium">Sanctioned</th>
+                    <th className="text-left p-3 font-medium">Sanctioned Date</th>
                     <th className="text-left p-3 font-medium">Progress in Budget</th>
                     <th className="text-left p-3 font-medium">Duration</th>
                   </tr>
@@ -345,6 +354,7 @@ const HODDashboard: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3">₹ {formatCurrency(Number(project.sanctioned_budget))}</td>
+                      <td className="p-3">{formatDate(project.sanctioned_date)}</td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">

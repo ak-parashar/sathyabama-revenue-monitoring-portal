@@ -37,7 +37,7 @@ const RequestStatus: React.FC = () => {
                           Requested On: {new Date(report.created_at).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded mt-2">
-                          {report.description || `Report for ${(report.projects as any)?.title}`}
+                          {report.description || `Report for ${report.project_title || 'General'}`}
                         </p>
                         {report.download_url && (
                           <Button size="sm" className="mt-2 h-7 text-xs">
@@ -68,7 +68,7 @@ const RequestStatus: React.FC = () => {
               {ongoingReports.map(r => (
                 <Card key={r.id}>
                   <CardContent className="p-4">
-                    <p className="text-sm">Processing report for {(r.projects as any)?.title}...</p>
+                    <p className="text-sm">Processing report for {r.project_title || 'General'}...</p>
                   </CardContent>
                 </Card>
               ))}

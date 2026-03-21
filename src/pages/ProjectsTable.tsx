@@ -29,6 +29,14 @@ const ProjectsTable: React.FC = () => {
   });
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -147,7 +155,7 @@ const ProjectsTable: React.FC = () => {
                         {statusMap[project.status] || project.status}
                       </span>
                     </TableCell>
-                    <TableCell>{project.sanctioned_date}</TableCell>
+                    <TableCell>{formatDate(project.sanctioned_date)}</TableCell>
                     <TableCell>{(project.profiles as any)?.name}</TableCell>
                   </TableRow>
                 ))}

@@ -11,7 +11,7 @@ import {
   Building2, GraduationCap, IndianRupee, Calendar, Clock,
   Download, FileText, UserPlus, Trash2, Check, File, Plus, ChevronDown
 } from 'lucide-react';
-import { useProject, useProjectDocuments, useProjectTeam, useProjectActivities, useAddDocument, useAddTeamMember, useUpdateProjectStatus } from '@/hooks/useProjects';
+import { useProject, useProjectDocuments, useProjectTeam, useProjectActivities, useAddDocument, useAddTeamMember, useUpdateProjectStatus, useAddReportRequest, useAddTransaction, useDeleteProject, useDepartments } from '@/hooks/useProjects';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,9 +40,13 @@ const ProjectDetail: React.FC = () => {
   const { data: teamMembers = [] } = useProjectTeam(id);
   const { data: activities = [] } = useProjectActivities(id);
 
+  const { data: departments = [] } = useDepartments();
   const addDocumentMutation = useAddDocument();
   const addTeamMemberMutation = useAddTeamMember();
   const updateStatusMutation = useUpdateProjectStatus();
+  const addReportRequestMutation = useAddReportRequest();
+  const addTransactionMutation = useAddTransaction();
+  const deleteProjectMutation = useDeleteProject();
 
   if (isLoading) {
     return <MainLayout><Skeleton className="h-96 w-full" /></MainLayout>;
@@ -61,11 +66,22 @@ const ProjectDetail: React.FC = () => {
   const API_BASE_URL = 'http://localhost:5000'; // Should ideally be in env
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN').format(amount);
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'numeric', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+  const formatDate = (dateString: string, includeTime = true) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      if (!includeTime) return `${d}-${m}-${y}`;
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${d}-${m}-${y} ${hh}:${mm}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   const sanctioned = Number(project.sanctioned_budget);
   const received = Number(project.received_budget);
@@ -132,6 +148,45 @@ const ProjectDetail: React.FC = () => {
               </Badge>
             )}
           </div>
+          {(profile?.role === 'superadmin' || profile?.role === 'admin') && (
+            <div className="flex gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-2">
+                    <Trash2 className="h-4 w-4" /> Delete Project
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="text-sm text-muted-foreground">
+                      This action will soft-delete the project. It will no longer appear in the project list, but the data will remain in the database for archival purposes.
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button 
+                      variant="destructive" 
+                      onClick={async () => {
+                        try {
+                          await deleteProjectMutation.mutateAsync(id!);
+                          toast({ title: 'Success', description: 'Project deleted successfully' });
+                          navigate('/home');
+                        } catch (err) {
+                          toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
+                        }
+                      }}
+                      disabled={deleteProjectMutation.isPending}
+                    >
+                      {deleteProjectMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
 
         {/* Project Info Grid */}
@@ -160,7 +215,7 @@ const ProjectDetail: React.FC = () => {
                 <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300 shadow-sm">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-sm font-medium text-center">{project.sanctioned_date || 'N/A'}</span>
+                <span className="text-sm font-medium text-center">{formatDate(project.sanctioned_date, false)}</span>
               </div>
               <div className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 transition-colors group cursor-default">
                 <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300 shadow-sm">
@@ -175,8 +230,57 @@ const ProjectDetail: React.FC = () => {
         {/* Budget Information */}
         <Card className="border-t-4 border-t-primary shadow-sm hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-3 bg-muted/30">
-            <CardTitle className="text-lg text-primary flex items-center gap-2">
-              <IndianRupee className="h-5 w-5" /> Financial Overview
+            <CardTitle className="text-lg text-primary flex items-center justify-between w-full">
+              <span className="flex items-center gap-2"><IndianRupee className="h-5 w-5" /> Financial Overview</span>
+              {canUpdateStatus && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                       Record Transaction
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Record Financial Transaction</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const data = {
+                        type: formData.get('type'),
+                        amount: Number(formData.get('amount')),
+                        description: formData.get('description')
+                      };
+                      try {
+                        await addTransactionMutation.mutateAsync({ projectId: id!, data });
+                        toast({ title: 'Success', description: 'Transaction recorded successfully' });
+                      } catch (err: any) {
+                        toast({ title: 'Error', description: err.response?.data?.error || 'Failed to record transaction', variant: 'destructive' });
+                      }
+                    }} className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Transaction Type</Label>
+                        <select name="type" id="type" className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                          <option value="spent">Expense (Spent)</option>
+                          <option value="stipend">Stipend Released</option>
+                          <option value="received">Fund Received</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Amount (₹)</Label>
+                        <Input id="amount" name="amount" type="number" step="0.01" required placeholder="0.00" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" placeholder="e.g. Equipment Purchase, Student Monthly Stipend" required />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={addTransactionMutation.isPending}>
+                        {addTransactionMutation.isPending ? 'Recording...' : 'Record Transaction'}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -273,6 +377,29 @@ const ProjectDetail: React.FC = () => {
                     </form>
                   </DialogContent>
                 </Dialog>
+              )}
+              {isPIOfProject && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={async () => {
+                    try {
+                      await addReportRequestMutation.mutateAsync({
+                        project_id: id,
+                        type: 'summary',
+                        description: `General summary report request for ${project.title}`
+                      });
+                      toast({ title: 'Success', description: 'Report request submitted' });
+                    } catch (err: any) {
+                      toast({ title: 'Error', description: 'Failed to request report', variant: 'destructive' });
+                    }
+                  }}
+                  disabled={addReportRequestMutation.isPending}
+                >
+                  <FileText className="h-4 w-4" /> 
+                  {addReportRequestMutation.isPending ? 'Requesting...' : 'Request Report'}
+                </Button>
               )}
             </div>
           </CardHeader>
@@ -377,6 +504,15 @@ const ProjectDetail: React.FC = () => {
                         <option value="jrf">JRF</option>
                         <option value="assistant">Assistant</option>
                         <option value="student">Student</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="department_id">Department</Label>
+                      <select name="department_id" id="department_id" className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
+                        <option value="">Select Department</option>
+                        {departments.map((dept: any) => (
+                          <option key={dept.id} value={dept.id}>{dept.name}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="space-y-2">

@@ -133,7 +133,33 @@ CREATE TABLE IF NOT EXISTS activity_logs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 9. SEED DATA
+-- 9. ANNOUNCEMENTS
+CREATE TABLE IF NOT EXISTS announcements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'info', -- 'info', 'warning', 'important'
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
+);
+
+-- 10. REPORT REQUESTS
+CREATE TABLE IF NOT EXISTS report_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id),
+  project_id UUID REFERENCES projects(id),
+  type TEXT NOT NULL, -- 'monthly', 'quarterly', 'annual', 'summary'
+  description TEXT,
+  status report_status NOT NULL DEFAULT 'requested',
+  download_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
+);
+
+-- 11. SEED DATA
 INSERT INTO departments (name, description) VALUES
   ('CSE', 'Computer Science and Engineering'),
   ('ECE', 'Electronics and Communication Engineering'),
@@ -146,3 +172,15 @@ INSERT INTO departments (name, description) VALUES
   ('CHEMICAL', 'Chemical Engineering'),
   ('MBA', 'Master of Business Administration')
 ON CONFLICT (name) DO NOTHING;
+
+-- ANNOUNCEMENTS SEED
+INSERT INTO announcements (title, content, type) VALUES
+  ('Welcome to Sathyabama Grants Hub', 'This is the new portal for managing research grants and projects.', 'info'),
+  ('Monthly Report Deadline', 'Please submit your monthly project updates by the 25th of every month.', 'important')
+ON CONFLICT DO NOTHING;
+
+-- 10. DEFAULT ADMIN USER
+-- Password is 'admin123'
+INSERT INTO profiles (name, email, password, role)
+VALUES ('Admin', 'admin@example.com', '$2a$10$gkbgOhdCIWb74ek9j6RqGOIdwFN9xHuP5d85lHx3O9CsfROyVw55y', 'superadmin')
+ON CONFLICT (email) DO NOTHING;
