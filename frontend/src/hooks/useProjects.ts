@@ -1,8 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import type {
+  Project,
+  AddTeamMemberInput,
+  AddAnnouncementInput,
+  AddReportRequestInput,
+  AddTransactionInput,
+} from '@/types/project';
 
 export const useProjects = () => {
-  return useQuery({
+  return useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {
       const response = await api.get('/projects');
@@ -59,7 +66,7 @@ export const useReportRequests = () => {
   return useQuery({
     queryKey: ['report_requests'],
     queryFn: async () => {
-      const response = await api.get('/report-requests'); // Note: Endpoint might need implementation
+      const response = await api.get('/report-requests');
       return response.data;
     },
   });
@@ -70,26 +77,26 @@ export const useDashboardStats = () => {
 
   const stats = projects ? {
     totalProjects: projects.length,
-    ongoingProjects: projects.filter((p: any) => p.status === 'on_going').length,
-    completedProjects: projects.filter((p: any) => p.status === 'completed').length,
-    terminatedProjects: projects.filter((p: any) => p.status === 'terminated').length,
-    totalSanctioned: projects.reduce((s: number, p: any) => s + Number(p.sanctioned_budget), 0),
-    totalReceived: projects.reduce((s: number, p: any) => s + Number(p.received_budget), 0),
-    totalUtilized: projects.reduce((s: number, p: any) => s + Number(p.utilized_budget), 0),
-    balanceToGet: projects.reduce((s: number, p: any) => s + Number(p.sanctioned_budget) - Number(p.received_budget), 0),
-    availableBudget: projects.reduce((s: number, p: any) => s + Number(p.received_budget) - Number(p.utilized_budget), 0),
+    ongoingProjects: projects.filter((p) => p.status === 'on_going').length,
+    completedProjects: projects.filter((p) => p.status === 'completed').length,
+    terminatedProjects: projects.filter((p) => p.status === 'terminated').length,
+    totalSanctioned: projects.reduce((s, p) => s + Number(p.sanctioned_budget), 0),
+    totalReceived: projects.reduce((s, p) => s + Number(p.received_budget), 0),
+    totalUtilized: projects.reduce((s, p) => s + Number(p.utilized_budget), 0),
+    balanceToGet: projects.reduce((s, p) => s + Number(p.sanctioned_budget) - Number(p.received_budget), 0),
+    availableBudget: projects.reduce((s, p) => s + Number(p.received_budget) - Number(p.utilized_budget), 0),
   } : null;
 
   const agencyStats = projects ? (() => {
-    const agencies = [...new Set(projects.map((p: any) => p.funding_agency))];
+    const agencies = [...new Set(projects.map((p) => p.funding_agency))];
     return agencies.map(agency => {
-      const ap = projects.filter((p: any) => p.funding_agency === agency);
+      const ap = projects.filter((p) => p.funding_agency === agency);
       return {
         agency,
         total: ap.length,
-        completed: ap.filter((p: any) => p.status === 'completed').length,
-        terminated: ap.filter((p: any) => p.status === 'terminated').length,
-        ongoing: ap.filter((p: any) => p.status === 'on_going').length,
+        completed: ap.filter((p) => p.status === 'completed').length,
+        terminated: ap.filter((p) => p.status === 'terminated').length,
+        ongoing: ap.filter((p) => p.status === 'on_going').length,
       };
     });
   })() : [];
@@ -117,7 +124,7 @@ export const useAddDocument = () => {
 export const useAddTeamMember = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ projectId, data }: { projectId: string; data: any }) => {
+    mutationFn: async ({ projectId, data }: { projectId: string; data: AddTeamMemberInput }) => {
       const response = await api.post(`/projects/${projectId}/team`, data);
       return response.data;
     },
@@ -157,7 +164,7 @@ export const useAnnouncements = () => {
 export const useAddAnnouncement = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: AddAnnouncementInput) => {
       const response = await api.post('/announcements', data);
       return response.data;
     },
@@ -183,7 +190,7 @@ export const useDeleteAnnouncement = () => {
 export const useAddReportRequest = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: AddReportRequestInput) => {
       const response = await api.post('/report-requests', data);
       return response.data;
     },
@@ -196,7 +203,7 @@ export const useAddReportRequest = () => {
 export const useAddTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ projectId, data }: { projectId: string; data: any }) => {
+    mutationFn: async ({ projectId, data }: { projectId: string; data: AddTransactionInput }) => {
       const response = await api.post(`/projects/${projectId}/transactions`, data);
       return response.data;
     },
@@ -219,6 +226,7 @@ export const useDeleteProject = () => {
     },
   });
 };
+
 export const useDepartments = () => {
   return useQuery({
     queryKey: ['departments'],

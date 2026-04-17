@@ -84,8 +84,9 @@ const CreateUser: React.FC = () => {
       } else {
         setFormData({ name: '', email: '', password: '', role: '', department_id: '', mobile_number: '', project_id: '' });
       }
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.error || 'Failed to create user';
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { error?: string } } };
+      const errorMsg = apiError.response?.data?.error || 'Failed to create user';
       toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
     } finally {
       setIsLoading(false);

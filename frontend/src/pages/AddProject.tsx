@@ -99,11 +99,12 @@ const AddProject: React.FC = () => {
 
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       navigate(`/project/${project.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating project:', error);
+      const apiError = error as { response?: { data?: { error?: string } } };
       toast({
         title: 'Error',
-        description: error.response?.data?.error || 'Failed to create project',
+        description: apiError.response?.data?.error || 'Failed to create project',
         variant: 'destructive',
       });
     } finally {

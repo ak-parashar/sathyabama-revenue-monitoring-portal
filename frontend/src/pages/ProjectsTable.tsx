@@ -49,7 +49,7 @@ const ProjectsTable: React.FC = () => {
 
   const filteredProjects = (projects ?? []).filter(project => {
     if (filters.title && !project.title.toLowerCase().includes(filters.title.toLowerCase())) return false;
-    if (filters.department && !((project.departments as any)?.name || '').toLowerCase().includes(filters.department.toLowerCase())) return false;
+    if (filters.department && !(project.departments?.name || '').toLowerCase().includes(filters.department.toLowerCase())) return false;
     if (filters.agency && !project.funding_agency.toLowerCase().includes(filters.agency.toLowerCase())) return false;
     if (filters.status && !(statusMap[project.status] || '').toLowerCase().includes(filters.status.toLowerCase())) return false;
     return true;
@@ -146,7 +146,7 @@ const ProjectsTable: React.FC = () => {
                     <TableCell className="font-medium">{idx + 1}</TableCell>
                     <TableCell className="text-primary hover:underline">{project.reference_id}</TableCell>
                     <TableCell className="text-primary hover:underline truncate max-w-[150px]">{project.title}</TableCell>
-                    <TableCell>{(project.departments as any)?.name}</TableCell>
+                    <TableCell>{project.departments?.name}</TableCell>
                     <TableCell>{project.duration_months}</TableCell>
                     <TableCell>{project.funding_agency}</TableCell>
                     <TableCell>{formatCurrency(Number(project.sanctioned_budget))}</TableCell>
@@ -156,7 +156,7 @@ const ProjectsTable: React.FC = () => {
                       </span>
                     </TableCell>
                     <TableCell>{formatDate(project.sanctioned_date)}</TableCell>
-                    <TableCell>{(project.profiles as any)?.name}</TableCell>
+                    <TableCell>{project.profiles?.name}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

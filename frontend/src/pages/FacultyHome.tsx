@@ -8,6 +8,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Project } from '@/types/project';
 
 const statusMap: Record<string, string> = {
   on_going: 'On-Going',
@@ -63,7 +64,7 @@ const FacultyHome: React.FC = () => {
           <Card
             key={project.id}
             className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-border/50 group bg-card/80 backdrop-blur-sm"
-            onClick={() => navigate(`/project/${project.id}`)}
+            onClick={() => navigate(`/project/${(project as Project).id}`)}
           >
             <CardContent className="p-0">
               <div className="flex relative">
@@ -94,7 +95,7 @@ const FacultyHome: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <GraduationCap className="h-4 w-4" />
-                      <span>{(project.departments as any)?.name}</span>
+                      <span>{project.departments?.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <IndianRupee className="h-4 w-4 text-muted-foreground" />

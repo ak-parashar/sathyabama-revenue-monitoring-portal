@@ -10,6 +10,7 @@ import { useDashboardStats } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Project } from '@/types/project';
 
 const statusMap: Record<string, string> = {
   on_going: 'On-Going', completed: 'Completed', terminated: 'Terminated',
@@ -43,9 +44,9 @@ const HODDashboard: React.FC = () => {
   }
 
   // Filter projects
-  const filteredProjects = allProjects.filter((p: any) => {
-    if (selectedDept !== 'all' && (p.departments as any)?.name !== selectedDept) return false;
-    if (selectedPI !== 'all' && (p.profiles as any)?.name !== selectedPI) return false;
+  const filteredProjects = allProjects.filter((p: Project) => {
+    if (selectedDept !== 'all' && p.departments?.name !== selectedDept) return false;
+    if (selectedPI !== 'all' && p.profiles?.name !== selectedPI) return false;
     if (selectedAgency !== 'all' && p.funding_agency !== selectedAgency) return false;
     return true;
   });
@@ -53,25 +54,25 @@ const HODDashboard: React.FC = () => {
   // Calculate local stats
   const stats = {
     totalProjects: filteredProjects.length,
-    ongoingProjects: filteredProjects.filter((p: any) => p.status === 'on_going').length,
-    completedProjects: filteredProjects.filter((p: any) => p.status === 'completed').length,
-    terminatedProjects: filteredProjects.filter((p: any) => p.status === 'terminated').length,
-    totalSanctioned: filteredProjects.reduce((s: number, p: any) => s + Number(p.sanctioned_budget), 0),
-    totalReceived: filteredProjects.reduce((s: number, p: any) => s + Number(p.received_budget), 0),
-    totalUtilized: filteredProjects.reduce((s: number, p: any) => s + Number(p.utilized_budget), 0),
-    balanceToGet: filteredProjects.reduce((s: number, p: any) => s + Number(p.sanctioned_budget) - Number(p.received_budget), 0),
-    availableBudget: filteredProjects.reduce((s: number, p: any) => s + Number(p.received_budget) - Number(p.utilized_budget), 0),
+    ongoingProjects: filteredProjects.filter((p: Project) => p.status === 'on_going').length,
+    completedProjects: filteredProjects.filter((p: Project) => p.status === 'completed').length,
+    terminatedProjects: filteredProjects.filter((p: Project) => p.status === 'terminated').length,
+    totalSanctioned: filteredProjects.reduce((s: number, p: Project) => s + Number(p.sanctioned_budget), 0),
+    totalReceived: filteredProjects.reduce((s: number, p: Project) => s + Number(p.received_budget), 0),
+    totalUtilized: filteredProjects.reduce((s: number, p: Project) => s + Number(p.utilized_budget), 0),
+    balanceToGet: filteredProjects.reduce((s: number, p: Project) => s + Number(p.sanctioned_budget) - Number(p.received_budget), 0),
+    availableBudget: filteredProjects.reduce((s: number, p: Project) => s + Number(p.received_budget) - Number(p.utilized_budget), 0),
   };
 
-  const agencyNames = [...new Set(filteredProjects.map((p: any) => p.funding_agency))].filter(Boolean) as string[];
+  const agencyNames = [...new Set(filteredProjects.map((p: Project) => p.funding_agency))].filter(Boolean) as string[];
   const agencyStats = agencyNames.map(agency => {
-    const ap = filteredProjects.filter((p: any) => p.funding_agency === agency);
+    const ap = filteredProjects.filter((p: Project) => p.funding_agency === agency);
     return {
       name: agency,
       'Total Projects': ap.length,
-      'Completed': ap.filter((p: any) => p.status === 'completed').length,
-      'Terminated': ap.filter((p: any) => p.status === 'terminated').length,
-      'On-Going': ap.filter((p: any) => p.status === 'on_going').length,
+      'Completed': ap.filter((p: Project) => p.status === 'completed').length,
+      'Terminated': ap.filter((p: Project) => p.status === 'terminated').length,
+      'On-Going': ap.filter((p: Project) => p.status === 'on_going').length,
     };
   });
 
@@ -82,13 +83,13 @@ const HODDashboard: React.FC = () => {
   ];
 
   const recentProjects = {
-    completed: filteredProjects.filter((p: any) => p.status === 'completed').slice(0, 3),
-    ongoing: filteredProjects.filter((p: any) => p.status === 'on_going').slice(0, 3),
-    terminated: filteredProjects.filter((p: any) => p.status === 'terminated').slice(0, 3),
+    completed: filteredProjects.filter((p: Project) => p.status === 'completed').slice(0, 3),
+    ongoing: filteredProjects.filter((p: Project) => p.status === 'on_going').slice(0, 3),
+    terminated: filteredProjects.filter((p: Project) => p.status === 'terminated').slice(0, 3),
   };
 
-  const piNames = [...new Set(allProjects.map((p: any) => (p.profiles as any)?.name))].filter(Boolean) as string[];
-  const deptNames = [...new Set(allProjects.map((p: any) => (p.departments as any)?.name))].filter(Boolean) as string[];
+  const piNames = [...new Set(allProjects.map((p: Project) => p.profiles?.name))].filter(Boolean) as string[];
+  const deptNames = [...new Set(allProjects.map((p: Project) => p.departments?.name))].filter(Boolean) as string[];
 
   return (
     <MainLayout>
@@ -275,7 +276,7 @@ const HODDashboard: React.FC = () => {
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} dataKey="value"
                       label={({ percent }) => `${(percent * 100).toFixed(1)}%`}>
-                      {pieData.map((entry: any, index: number) => (
+                      {pieData.map((entry: { name: string; value: number; color: string }, index: number) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -297,14 +298,14 @@ const HODDashboard: React.FC = () => {
             {(['completed', 'ongoing', 'terminated'] as const).map(status => (
               <div key={status} className="mt-4 space-y-2">
                 <p className="text-sm font-medium text-center text-muted-foreground capitalize">{statusMap[status === 'ongoing' ? 'on_going' : status]}</p>
-                {recentProjects[status].map((project: any) => (
+                {recentProjects[status].map((project: Project) => (
                   <div key={project.id} className={cn(
                     "grid grid-cols-5 gap-4 text-sm p-2 rounded",
                     status === 'terminated' ? 'bg-destructive/10' : 'bg-background/50'
                   )}>
                     <div className="truncate">{project.title}</div>
                     <div>{project.funding_agency}</div>
-                    <div>{(project.profiles as any)?.email}</div>
+                    <div>{project.profiles?.email}</div>
                     <div>{formatDate(project.sanctioned_date)}</div>
                     <div>{formatCurrency(Number(project.sanctioned_budget))}</div>
                   </div>
@@ -337,12 +338,12 @@ const HODDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProjects.map((project: any, idx: number) => (
+                  {filteredProjects.map((project: Project, idx: number) => (
                     <tr key={project.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => window.location.href = `/project/${project.id}`}>
                       <td className="p-3">{idx + 1}</td>
                       <td className="p-3 truncate max-w-[150px] font-medium text-primary">{project.title}</td>
-                      <td className="p-3">{(project.profiles as any)?.name}</td>
-                      <td className="p-3">{(project.departments as any)?.name}</td>
+                      <td className="p-3">{project.profiles?.name}</td>
+                      <td className="p-3">{project.departments?.name}</td>
                       <td className="p-3">{project.funding_agency}</td>
                       <td className="p-3">
                         <span className={cn(

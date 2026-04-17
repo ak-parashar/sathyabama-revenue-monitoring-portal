@@ -15,7 +15,7 @@ export interface Profile {
 }
 
 interface AuthContextType {
-  user: any | null; // Placeholder for legacy compatibility
+  user: Profile | null; // Map of profile for legacy compatibility
   profile: Profile | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;

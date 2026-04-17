@@ -38,8 +38,9 @@ const Settings: React.FC = () => {
             });
             await refreshProfile();
             toast({ title: 'Success', description: 'Profile updated successfully' });
-        } catch (err: any) {
-            toast({ title: 'Error', description: err.response?.data?.error || 'Failed to update profile', variant: 'destructive' });
+        } catch (err: unknown) {
+            const apiErr = err as { response?: { data?: { error?: string } } };
+            toast({ title: 'Error', description: apiErr.response?.data?.error || 'Failed to update profile', variant: 'destructive' });
         } finally {
             setIsProfileLoading(false);
         }
@@ -60,8 +61,9 @@ const Settings: React.FC = () => {
             });
             setPasswords({ current: '', new: '', confirm: '' });
             toast({ title: 'Success', description: 'Password updated successfully' });
-        } catch (err: any) {
-            toast({ title: 'Error', description: err.response?.data?.error || 'Failed to update password', variant: 'destructive' });
+        } catch (err: unknown) {
+            const apiErr = err as { response?: { data?: { error?: string } } };
+            toast({ title: 'Error', description: apiErr.response?.data?.error || 'Failed to update password', variant: 'destructive' });
         } finally {
             setIsPasswordLoading(false);
         }
@@ -84,7 +86,7 @@ const Settings: React.FC = () => {
             });
             await refreshProfile();
             toast({ title: 'Success', description: 'Profile picture updated' });
-        } catch (err: any) {
+        } catch (_err: unknown) {
             toast({ title: 'Error', description: 'Failed to upload image', variant: 'destructive' });
         } finally {
             setIsAvatarLoading(false);

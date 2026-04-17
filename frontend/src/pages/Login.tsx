@@ -38,8 +38,9 @@ const Login: React.FC = () => {
       } else {
         toast({ title: 'Login failed', description: 'Invalid email or password', variant: 'destructive' });
       }
-    } catch (error: any) {
-      toast({ title: 'Network Error', description: error?.message || 'Could not reach the server. Please try again.', variant: 'destructive' });
+    } catch (error: unknown) {
+      const netError = error as { message?: string };
+      toast({ title: 'Network Error', description: netError?.message || 'Could not reach the server. Please try again.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }

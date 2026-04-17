@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import type { TeamMember, Department, AddTeamMemberInput } from '@/types/project';
 
 const statusMap: Record<string, string> = {
   on_going: 'On-Going', completed: 'Completed', terminated: 'Terminated',
@@ -33,7 +34,7 @@ const ProjectDetail: React.FC = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
 
-  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   const { data: project, isLoading } = useProject(id);
   const { data: documents = [] } = useProjectDocuments(id);
@@ -203,7 +204,7 @@ const ProjectDetail: React.FC = () => {
                 <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300 shadow-sm">
                   <GraduationCap className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-sm font-medium text-center text-balance">{(project.departments as any)?.name}</span>
+                <span className="text-sm font-medium text-center text-balance">{project.departments?.name}</span>
               </div>
               <div className="p-4 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 transition-colors group cursor-default">
                 <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300 shadow-sm">
@@ -247,15 +248,16 @@ const ProjectDetail: React.FC = () => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
                       const data = {
-                        type: formData.get('type'),
+                        type: formData.get('type') as 'received' | 'spent' | 'stipend',
                         amount: Number(formData.get('amount')),
-                        description: formData.get('description')
+                        description: String(formData.get('description') ?? '')
                       };
                       try {
                         await addTransactionMutation.mutateAsync({ projectId: id!, data });
                         toast({ title: 'Success', description: 'Transaction recorded successfully' });
-                      } catch (err: any) {
-                        toast({ title: 'Error', description: err.response?.data?.error || 'Failed to record transaction', variant: 'destructive' });
+                      } catch (err: unknown) {
+                        const apiErr = err as { response?: { data?: { error?: string } } };
+                        toast({ title: 'Error', description: apiErr.response?.data?.error || 'Failed to record transaction', variant: 'destructive' });
                       }
                     }} className="space-y-4 pt-4">
                       <div className="space-y-2">
@@ -341,8 +343,9 @@ const ProjectDetail: React.FC = () => {
                       try {
                         await addDocumentMutation.mutateAsync({ projectId: id!, data: formData });
                         toast({ title: 'Success', description: 'Update added successfully' });
-                      } catch (err: any) {
-                        toast({ title: 'Error', description: err.response?.data?.error || 'Failed to add update', variant: 'destructive' });
+                      } catch (err: unknown) {
+                        const apiErr = err as { response?: { data?: { error?: string } } };
+                        toast({ title: 'Error', description: apiErr.response?.data?.error || 'Failed to add update', variant: 'destructive' });
                       }
                     }} className="space-y-4 pt-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -391,7 +394,7 @@ const ProjectDetail: React.FC = () => {
                         description: `General summary report request for ${project.title}`
                       });
                       toast({ title: 'Success', description: 'Report request submitted' });
-                    } catch (err: any) {
+                    } catch (_err: unknown) {
                       toast({ title: 'Error', description: 'Failed to request report', variant: 'destructive' });
                     }
                   }}
@@ -483,14 +486,16 @@ const ProjectDetail: React.FC = () => {
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
+                    const memberData = Object.fromEntries(formData) as unknown as AddTeamMemberInput;
                     try {
                       await addTeamMemberMutation.mutateAsync({
                         projectId: id!,
-                        data: Object.fromEntries(formData),
+                        data: memberData,
                       });
                       toast({ title: 'Success', description: 'Team member added successfully' });
-                    } catch (err: any) {
-                      toast({ title: 'Error', description: err.response?.data?.error || 'Failed to add team member', variant: 'destructive' });
+                    } catch (err: unknown) {
+                      const apiErr = err as { response?: { data?: { error?: string } } };
+                      toast({ title: 'Error', description: apiErr.response?.data?.error || 'Failed to add team member', variant: 'destructive' });
                     }
                   }} className="space-y-4 pt-4">
                     <div className="space-y-2">
@@ -510,7 +515,7 @@ const ProjectDetail: React.FC = () => {
                       <Label htmlFor="department_id">Department</Label>
                       <select name="department_id" id="department_id" className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" required>
                         <option value="">Select Department</option>
-                        {departments.map((dept: any) => (
+                        {departments.map((dept: Department) => (
                           <option key={dept.id} value={dept.id}>{dept.name}</option>
                         ))}
                       </select>
@@ -546,8 +551,8 @@ const ProjectDetail: React.FC = () => {
                     <TableRow>
                       <TableCell colSpan={7} className="bg-muted/50 text-center font-medium py-2">Investigators</TableCell>
                     </TableRow>
-                    {investigators.map((member) => {
-                      const p = member.profiles as any;
+                    {investigators.map((member: TeamMember) => {
+                      const p = member.profiles;
                       return (
                         <TableRow 
                           key={member.id}
@@ -575,8 +580,8 @@ const ProjectDetail: React.FC = () => {
                     <TableRow>
                       <TableCell colSpan={7} className="bg-muted/50 text-center font-medium py-2">Man Power</TableCell>
                     </TableRow>
-                    {manpower.map((member) => {
-                      const p = member.profiles as any;
+                    {manpower.map((member: TeamMember) => {
+                      const p = member.profiles;
                       return (
                         <TableRow 
                           key={member.id}

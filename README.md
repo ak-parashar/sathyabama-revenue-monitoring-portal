@@ -1,8 +1,16 @@
 # Sathyabama Revenue Monitoring Portal
 
-![Sathyabama Institute of Science and Technology Logo](public/sathyabama-logo.png)
-
 A comprehensive, role-based Grants & Revenue Monitoring Dashboard built specifically for the **Sathyabama Institute of Science and Technology**. This platform enables Principal Investigators (PIs), Head of Departments (HODs), and Administrators to seamlessly track project funding, team members, document milestones, and overall financial health for various research grants.
+
+## 📁 Project Structure
+
+```
+sathyabama-grants-hub-main/
+├── frontend/          ← React + Vite frontend (TypeScript, Tailwind, shadcn/ui)
+├── backend/           ← Node.js + Express backend (TypeScript, PostgreSQL)
+├── local_postgres_schema.sql  ← Database schema
+└── package.json       ← Root convenience scripts
+```
 
 ## 🌟 Key Features
 
@@ -21,7 +29,6 @@ A comprehensive, role-based Grants & Revenue Monitoring Dashboard built specific
 * TypeScript
 * Tailwind CSS
 * shadcn/ui (Radix UI)
-* Framer Motion (Animations)
 * Lucide React (Icons)
 * Recharts (Data Visualization)
 
@@ -46,15 +53,15 @@ A comprehensive, role-based Grants & Revenue Monitoring Dashboard built specific
    ```
 
 ### 2. Backend Setup
-1. Navigate to the server directory:
+1. Navigate to the `backend` directory:
    ```bash
-   cd server
+   cd backend
    ```
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Create a `.env` file in the `server` directory and add your database credentials:
+3. Create a `.env` file in the `backend` directory and add your database credentials:
    ```env
    PORT=5000
    POSTGRES_USER=postgres
@@ -70,9 +77,9 @@ A comprehensive, role-based Grants & Revenue Monitoring Dashboard built specific
    ```
 
 ### 3. Frontend Setup
-1. Open a new terminal and navigate to the project root:
+1. Open a new terminal and navigate to the `frontend` directory:
    ```bash
-   cd sathyabama-grants-hub-main
+   cd frontend
    ```
 2. Install dependencies:
    ```bash
@@ -82,10 +89,18 @@ A comprehensive, role-based Grants & Revenue Monitoring Dashboard built specific
    ```bash
    npm run dev
    ```
-4. Open your browser and navigate to `http://localhost:8080` (or the port specified by Vite).
+4. Open your browser and navigate to `http://localhost:8080`.
+
+### Root Convenience Scripts (Optional)
+From the project root you can also use:
+```bash
+npm run backend      # Start backend dev server
+npm run frontend     # Start frontend dev server
+npm run install:all  # Install deps for both frontend and backend
+```
 
 ## 🛡️ Default Roles & Authentication
-When initially setting up the database, you can seed a Superadmin user. From the web portal, the Superadmin can create branch Admins (HODs), who can in turn create PIs. 
+When initially setting up the database, you can seed a Superadmin user. From the web portal, the Superadmin can create branch Admins (HODs), who can in turn create PIs.
 
 All authenticated users are directed to customized dashboards based on their role (`/faculty-home`, `/hod-dashboard`, `/admin-dashboard`, etc.).
 

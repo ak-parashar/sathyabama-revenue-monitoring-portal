@@ -9,6 +9,7 @@ import { useAnnouncements, useAddAnnouncement, useDeleteAnnouncement } from '@/h
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import type { Announcement } from '@/types/project';
 
 const Announcements: React.FC = () => {
     const { data: announcements, isLoading } = useAnnouncements();
@@ -96,7 +97,7 @@ const Announcements: React.FC = () => {
                     </div>
                 ) : announcements && announcements.length > 0 ? (
                     <div className="space-y-4">
-                        {announcements.map((ann: any) => (
+                        {announcements.map((ann: Announcement) => (
                             <Card key={ann.id} className={cn(
                                 "border-l-4",
                                 ann.type === 'important' ? "border-l-destructive" : 

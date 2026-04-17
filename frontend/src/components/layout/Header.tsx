@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, User, LogOut, ChevronDown } from 'lucide-react';
-import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
+import { useAuth, getRoleLabel, AppRole } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ onAddProject }) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="px-2 py-1.5">
-              <span className="text-xs font-semibold text-primary uppercase">{getRoleLabel(profile?.role as any || 'student')}</span>
+              <span className="text-xs font-semibold text-primary uppercase">{getRoleLabel((profile?.role ?? 'student') as AppRole)}</span>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 cursor-pointer">
